@@ -1,5 +1,16 @@
-# Standard RAG Pipeline
-
+# 🔍 Standard RAG — Retrieval-Augmented Generation
+ 
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/LangChain-0.1%2B-green?style=for-the-badge&logo=chainlink&logoColor=white" />
+  <img src="https://img.shields.io/badge/ChromaDB-Vector%20Store-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/OpenAI-GPT--4-412991?style=for-the-badge&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+</p>
+<p align="center">
+  A clean, production-ready implementation of the <strong>Standard RAG (Retrieval-Augmented Generation)</strong> pipeline — part of the <a href="https://github.com/rajkumarpawar07/RAG-Architectures">RAG-Architectures</a> collection.
+</p>
+---
 A professional, from-scratch implementation of a standard Retrieval-Augmented Generation (RAG) pipeline. This project is designed as an educational reference and a production-ready starting point, avoiding heavy frameworks to clearly demonstrate how core RAG concepts work under the hood.
 
 ## 🌟 Key Features
