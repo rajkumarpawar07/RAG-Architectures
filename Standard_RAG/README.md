@@ -185,12 +185,15 @@ This module is the baseline in a broader collection of RAG variants. Start here 
 
 ```
 RAG-Architectures/
-├── Standard_RAG/        ◀ You are here
-├── HyDE_RAG/
-├── Corrective_RAG/
+├── Standard_RAG/  ◀ You are here
+├── Conversational_RAG/
+├── Corrective_RAG_(CRAG)/
+├── Adaptive_RAG/
+├── Self-RAG/
+├── Fusion_RAG/
+├── HyDE/
 ├── Agentic_RAG/
-├── Graph_RAG/
-└── Hybrid_RAG/
+└── Graph_RAG/
 ```
 
 🔗 [View the full collection →](https://github.com/rajkumarpawar07/RAG-Architectures)
