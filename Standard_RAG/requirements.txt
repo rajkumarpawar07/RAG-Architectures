@@ -1,0 +1,4 @@
+google-genai
+docling
+faiss-cpu
+numpy
