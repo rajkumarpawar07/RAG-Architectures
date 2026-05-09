@@ -1,0 +1,7 @@
+google-genai
+PyMuPDF
+beautifulsoup4
+nltk
+asyncpg
+pgvector
+tavily-python
