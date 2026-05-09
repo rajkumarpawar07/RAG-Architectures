@@ -1,130 +1,259 @@
-# 🔍 Standard RAG — Retrieval-Augmented Generation
- 
+# Standard RAG — Retrieval-Augmented Generation
+
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/LangChain-0.1%2B-green?style=for-the-badge&logo=chainlink&logoColor=white" />
-  <img src="https://img.shields.io/badge/ChromaDB-Vector%20Store-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/OpenAI-GPT--4-412991?style=for-the-badge&logo=openai&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/FAISS-Vector%20Search-FF6F00?style=flat-square" />
+  <img src="https://img.shields.io/badge/Docling-PDF%20Parser-6A0DAD?style=flat-square" />
+  <img src="https://img.shields.io/badge/Dependencies-%3C%205-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
+
 <p align="center">
-  A clean, production-ready implementation of the <strong>Standard RAG (Retrieval-Augmented Generation)</strong> pipeline — part of the <a href="https://github.com/rajkumarpawar07/RAG-Architectures">RAG-Architectures</a> collection.
+  A transparent, from-scratch implementation of a Standard RAG pipeline — built to be understood, not abstracted away.<br/>
+  Part of the <a href="https://github.com/rajkumarpawar07/RAG-Architectures"><strong>RAG-Architectures</strong></a> collection.
 </p>
----
-A professional, from-scratch implementation of a standard Retrieval-Augmented Generation (RAG) pipeline. This project is designed as an educational reference and a production-ready starting point, avoiding heavy frameworks to clearly demonstrate how core RAG concepts work under the hood.
-
-## 🌟 Key Features
-
-- **High-Quality PDF Extraction:** Uses [Docling](https://github.com/DS4SD/docling) to intelligently parse PDFs, preserving document structure (tables, headers) better than naive extractors.
-- **Production-Grade Chunking:** Implements Recursive Character Text Splitting (the industry standard) to preserve semantic coherence across paragraphs and sentences.
-- **State-of-the-Art Models:** Powered by the official `google-genai` SDK:
-  - **Embeddings:** `gemini-embedding-001` (3072-dimensional vectors).
-  - **LLM:** `gemini-3.1-flash-lite` for fast, cost-effective, and highly capable text generation.
-- **Task-Specific Embeddings:** Uses Gemini's `RETRIEVAL_DOCUMENT` and `RETRIEVAL_QUERY` task types to optimize semantic matching by 5-10%.
-- **Efficient Vector Search:** Utilizes `faiss-cpu` with exact inner product (cosine similarity via L2 normalization) for sub-millisecond retrieval.
-- **Robust Error Handling:** Implements exponential backoff for API rate limits (e.g., HTTP 429).
-- **Source Citations:** Prompt engineering strictly enforces that the LLM grounds its answers in the provided context and cites its sources.
 
 ---
 
-## 🏗️ Architecture Overview
+## Why This Exists
 
-The system is divided into two primary flows:
-
-### 1. Ingestion Pipeline
-Documents (PDFs, TXTs) are loaded from the `data/` directory → Parsed & Extracted → Chunked recursively → Embedded in batches via Gemini → Indexed using FAISS → Persisted to disk along with metadata.
-
-### 2. Query Pipeline
-User question → Embedded via Gemini → FAISS vector search retrieves Top-K chunks → Prompt builder injects context → Gemini LLM generates a grounded answer with citations.
+Most RAG tutorials reach for LangChain or LlamaIndex. While powerful, those frameworks hide the mechanics that matter most — chunking logic, embedding strategies, prompt structure, index design. This project builds the full pipeline in **fewer than 5 dependencies**, giving you complete visibility and control over every component.
 
 ---
 
-## 📂 Project Structure
+## Features
 
-```text
-Standard_RAG/
-├── data/                   # Drop your PDFs and .txt files here
-├── faiss_index/            # Auto-created: persisted FAISS index + metadata
-├── config.py               # Central configuration (models, chunking, paths)
-├── document_loader.py      # Loads PDFs (via Docling) and text files
-├── chunker.py              # Recursive character text splitting
-├── embedder.py             # Gemini embeddings with batching & backoff
-├── vector_store.py         # FAISS index operations (build, save, search)
-├── generator.py            # Gemini LLM prompt engineering & generation
-├── rag_pipeline.py         # Orchestrates ingestion and query flows
-├── main.py                 # CLI entry point
-├── requirements.txt        # Python dependencies
-└── .env                    # Environment variables (API Key)
+**Intelligent PDF Parsing**
+Uses [Docling](https://github.com/DS4SD/docling) instead of naive text extraction — preserving tables, headers, and document structure with high fidelity.
+
+**Production-Grade Chunking**
+Recursive Character Text Splitting maintains semantic coherence across paragraph and sentence boundaries, the current industry standard.
+
+**State-of-the-Art Embeddings**
+Powered by `gemini-embedding-001` (3072-dimensional vectors) via the official `google-genai` SDK, with task-specific types (`RETRIEVAL_DOCUMENT` / `RETRIEVAL_QUERY`) that improve semantic matching by 5–10%.
+
+**Efficient Vector Search**
+`faiss-cpu` with exact inner product search (cosine similarity via L2 normalization) delivers sub-millisecond retrieval.
+
+**Grounded Generation**
+`gemini-2.5-flash-lite` generates answers strictly grounded in retrieved context, with source citations enforced through prompt engineering.
+
+**Resilient API Calls**
+Exponential backoff handles rate limits (HTTP 429) automatically throughout the pipeline.
+
+---
+
+## Architecture
+
+The system operates in two distinct flows:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                      INGESTION PIPELINE                      ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  📂 data/  (PDFs, TXTs)                                      ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  📑 Docling Parser  ─────────────  Structure-aware extract   ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  ✂️  Recursive Chunker  ─────────  Semantic chunk splitting  ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🔢 Gemini Embedder  ────────────  Batched, with backoff     ║
+║     gemini-embedding-001 · RETRIEVAL_DOCUMENT                ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🗃️  FAISS Index  +  Metadata  ──  Persisted to disk         ║
+╚══════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════╗
+║                        QUERY PIPELINE                        ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  ❓ User Query                                               ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🔢 Gemini Embedder  ────────────  RETRIEVAL_QUERY type      ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🔍 FAISS Search  ───────────────  Top-K similar chunks      ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  📝 Prompt Builder  ─────────────  Context + query inject    ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🤖 gemini-2.5-flash-lite  ──────  Grounded answer           ║
+║                                   + source citations         ║
+╚══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 🚀 Getting Started
+## Project Structure
+
+```
+Standard_RAG/
+├── data/                   # Drop your PDFs and .txt files here
+├── faiss_index/            # Auto-created: persisted FAISS index + metadata
+├── config.py               # Central config: models, chunk size, paths, top-k
+├── document_loader.py      # PDF (Docling) and plain-text file loading
+├── chunker.py              # Recursive character text splitting
+├── embedder.py             # Gemini embeddings with batching & exponential backoff
+├── vector_store.py         # FAISS index: build, save, load, search
+├── generator.py            # Prompt engineering + Gemini LLM generation
+├── rag_pipeline.py         # Orchestrates ingestion and query flows
+├── main.py                 # CLI entry point
+├── requirements.txt        # Python dependencies
+└── .env                    # API key (not committed)
+```
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.9+
-- A Google Gemini API Key. Get yours at [Google AI Studio](https://aistudio.google.com/apikey).
+- Python 3.9 or higher
+- A Google Gemini API key — get one at [Google AI Studio](https://aistudio.google.com/apikey)
 
 ### Installation
 
-1. Clone or download this repository.
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Create a `.env` file in the root directory and add your Google API key:
-   ```env
-   GOOGLE_API_KEY="your_api_key_here"
-   ```
+**1. Clone the repository**
+```bash
+git clone https://github.com/rajkumarpawar07/RAG-Architectures.git
+cd RAG-Architectures/Standard_RAG
+```
 
-### 1. Ingest Documents
+**2. Create and activate a virtual environment**
+```bash
+python -m venv venv
+source venv/bin/activate       # macOS / Linux
+venv\Scripts\activate          # Windows
+```
 
-Place your `.pdf` and `.txt` files into the `data/` folder, then run:
+**3. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+> **Note:** On first run, Docling may download OCR models — this takes a minute or two.
+
+**4. Configure your API key**
+
+Create a `.env` file in the `Standard_RAG/` directory:
+```env
+GOOGLE_API_KEY="your_api_key_here"
+```
+
+---
+
+## Usage
+
+### Ingest Documents
+
+Place your `.pdf` or `.txt` files into the `data/` folder, then run:
 
 ```bash
 python main.py ingest
 ```
 
-*Note: On the first run, Docling may download OCR models which can take a minute or two.*
+Parses, chunks, embeds, and indexes all documents into a persisted FAISS index.
 
-### 2. Query the Index
+---
 
-Ask a single question and get an answer with source citations:
+### Query — Single Question
 
 ```bash
 python main.py query "What are the main skills mentioned in the resume?"
 ```
 
-### 3. Interactive Chat
+Returns a grounded answer with source citations from your indexed documents.
 
-Start a continuous Q&A session:
+---
+
+### Query — Interactive Chat
 
 ```bash
 python main.py chat
 ```
-*(Type `quit` or `exit` to end the session)*
 
-### 4. View Statistics
+Starts a continuous Q&A session. Type `quit` or `exit` to end.
 
-Check how many documents and chunks are currently in your vector store:
+---
+
+### View Index Statistics
 
 ```bash
 python main.py stats
 ```
 
----
-
-## ⚙️ Configuration (`config.py`)
-
-You can easily tune the pipeline by modifying `config.py`:
-
-- **Chunking:** Adjust `CHUNK_SIZE` (default 1000) and `CHUNK_OVERLAP` (default 200).
-- **Retrieval:** Change `TOP_K` (default 5) to retrieve more or fewer chunks per query.
-- **Models:** Swap out the Gemini embedding model or LLM (e.g., change to `gemini-2.0-flash` or `gemini-2.0-pro-exp`).
+Displays the number of indexed documents and chunks in the current vector store.
 
 ---
 
-## 💡 Why from scratch?
+## Configuration
 
-Many developers rely heavily on frameworks like LangChain or LlamaIndex. While powerful, they can obscure the underlying mechanics of RAG. This project provides a transparent, easy-to-debug, and highly customizable alternative using less than 5 dependencies. You have complete control over the chunking logic, prompts, and index structure.
+All pipeline parameters live in `config.py` — no digging through framework internals.
+
+| Parameter       | Default                 | Description                                               |
+|-----------------|-------------------------|-----------------------------------------------------------|
+| `CHUNK_SIZE`    | `1000`                  | Characters per chunk                                      |
+| `CHUNK_OVERLAP` | `200`                   | Overlap between consecutive chunks                        |
+| `TOP_K`         | `5`                     | Number of chunks retrieved per query                      |
+| Embedding model | `gemini-embedding-001`  | Swap for any Gemini-compatible embedding model            |
+| LLM             | `gemini-2.5-flash-lite` | Swap for `gemini-2.0-flash`, `gemini-2.0-pro-exp`, etc.  |
+
+---
+
+## Tech Stack
+
+| Component         | Library / Model                              |
+|-------------------|----------------------------------------------|
+| PDF Parsing       | [Docling](https://github.com/DS4SD/docling)  |
+| Embeddings        | `gemini-embedding-001` via `google-genai`    |
+| Vector Search     | `faiss-cpu`                                  |
+| LLM               | `gemini-2.5-flash-lite` via `google-genai`   |
+| Config Management | `python-dotenv`                              |
+| Language          | Python 3.9+                                  |
+
+---
+
+## Part of RAG-Architectures
+
+This module is the baseline in a broader collection of RAG variants. Start here to understand the fundamentals before exploring advanced patterns.
+
+```
+RAG-Architectures/
+├── Standard_RAG/        ◀ You are here
+├── HyDE_RAG/
+├── Corrective_RAG/
+├── Agentic_RAG/
+├── Graph_RAG/
+└── Hybrid_RAG/
+```
+
+🔗 [View the full collection →](https://github.com/rajkumarpawar07/RAG-Architectures)
+
+---
+
+## Contributing
+
+Contributions, issues, and suggestions are welcome.
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "feat: describe your change"`
+4. Push and open a Pull Request
+
+---
+
+## License
+
+MIT License — see the [LICENSE](../../LICENSE) file for details.
+
+---
+
+<p align="center">Built by <a href="https://github.com/rajkumarpawar07">Raj Kumar Pawar</a></p>
