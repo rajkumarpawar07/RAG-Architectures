@@ -46,49 +46,7 @@ Exponential backoff handles rate limits (HTTP 429) automatically throughout the 
 
 ## Architecture
 
-The system operates in two distinct flows:
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║                      INGESTION PIPELINE                      ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  📂 data/  (PDFs, TXTs)                                      ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  📑 Docling Parser  ─────────────  Structure-aware extract   ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  ✂️  Recursive Chunker  ─────────  Semantic chunk splitting  ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🔢 Gemini Embedder  ────────────  Batched, with backoff     ║
-║     gemini-embedding-001 · RETRIEVAL_DOCUMENT                ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🗃️  FAISS Index  +  Metadata  ──  Persisted to disk         ║
-╚══════════════════════════════════════════════════════════════╝
-
-╔══════════════════════════════════════════════════════════════╗
-║                        QUERY PIPELINE                        ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  ❓ User Query                                               ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🔢 Gemini Embedder  ────────────  RETRIEVAL_QUERY type      ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🔍 FAISS Search  ───────────────  Top-K similar chunks      ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  📝 Prompt Builder  ─────────────  Context + query inject    ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🤖 gemini-2.5-flash-lite  ──────  Grounded answer           ║
-║                                   + source citations         ║
-╚══════════════════════════════════════════════════════════════╝
-```
+<img width="1536" height="823" alt="ChatGPT Image May 9, 2026, 08_48_48 PM" src="https://github.com/user-attachments/assets/e81eb559-4aab-4795-b066-66b086679676" />
 
 ---
 
