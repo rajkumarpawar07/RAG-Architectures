@@ -51,59 +51,6 @@ The final LLM is fed three inputs simultaneously: retrieved chunks, the rewritte
 
 ## Architecture
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║                      INGESTION PIPELINE                      ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  📂 data/  (PDFs, TXTs)                                      ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  📑 PyMuPDF Parser  ─────────────  Fast text extraction      ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  ✂️  Recursive Chunker                                        ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🔢 Gemini Embedder  ────────────  Batched                   ║
-║       │                                                      ║
-║       ▼                                                      ║
-║  🗃️  Qdrant Vector DB  ──────────  Local via Docker          ║
-╚══════════════════════════════════════════════════════════════╝
-
-╔══════════════════════════════════════════════════════════════╗
-║                  CONVERSATIONAL QUERY PIPELINE               ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  ❓ User Query                                               ║
-║       │                                                      ║
-║       ├── Has History? ──Yes──▶ Fetch Last N Turns (SQLite)  ║
-║       │                               │                      ║
-║       │                               ▼                      ║
-║       │                        Query Rewriter (LLM)          ║
-║       │                               │                      ║
-║       └────────── No ─────────────────┘                      ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                            Embed Standalone Query            ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                            Search Qdrant → Top-K Chunks      ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                   Prompt Builder  ←───┤                      ║
-║                   (Chunks + Query + History)                  ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                          Gemini LLM Generator                ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                          Answer + Source Citations           ║
-║                                       │                      ║
-║                                       ▼                      ║
-║                     Save Q&A Pair ──▶ SQLite Memory DB       ║
-╚══════════════════════════════════════════════════════════════╝
-```
 <img width="1774" height="887" alt="ChatGPT Image May 9, 2026, 11_07_41 PM" src="https://github.com/user-attachments/assets/7a7b2726-f78e-4e83-aa25-bb3531d9ee81" />
 
 ---
@@ -271,11 +218,13 @@ This module builds on the Standard RAG pipeline by introducing conversational st
 RAG-Architectures/
 ├── Standard_RAG/
 ├── Conversational_RAG/  ◀ You are here
-├── HyDE_RAG/
-├── Corrective_RAG/
+├── Corrective_RAG_(CRAG)/
+├── Adaptive_RAG/
+├── Self-RAG/
+├── Fusion_RAG/
+├── HyDE/
 ├── Agentic_RAG/
-├── Graph_RAG/
-└── Hybrid_RAG/
+└── Graph_RAG/
 ```
 
 🔗 [View the full collection →](https://github.com/rajkumarpawar07/RAG-Architectures)
@@ -299,4 +248,4 @@ MIT License — see the [LICENSE](../../LICENSE) file for details.
 
 ---
 
-<p align="center">Built by <a href="https://github.com/rajkumarpawar07">Raj Kumar Pawar</a></p>
+<p align="center">Built by <a href="https://github.com/rajkumarpawar07">Rajkumar Pawar</a></p>
