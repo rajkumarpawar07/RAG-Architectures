@@ -1,4 +1,4 @@
-# Conversational RAG — Adding Memory
+# Conversational RAG
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
@@ -6,95 +6,126 @@
   <img src="https://img.shields.io/badge/Qdrant-Vector%20DB-E5005A?style=flat-square" />
   <img src="https://img.shields.io/badge/SQLite-Memory-003B57?style=flat-square" />
   <img src="https://img.shields.io/badge/PyMuPDF-Fast%20Parser-FFD43B?style=flat-square" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
 
 <p align="center">
-  A stateful RAG pipeline that remembers chat history and dynamically rewrites queries to solve the "context blindness" problem.<br/>
+  A stateful RAG pipeline that remembers conversation history and dynamically rewrites queries<br/>
+  to solve the <strong>"context blindness"</strong> problem of standard RAG systems.<br/>
   Part of the <a href="https://github.com/rajkumarpawar07/RAG-Architectures"><strong>RAG-Architectures</strong></a> collection.
 </p>
 
 ---
 
-## Why This Exists
+## The Problem This Solves
 
-In a standard RAG setup, if a user asks a follow-up question like "How much does it cost?", the system fails because it doesn't know what "it" refers to when searching the vector database. 
+In a standard RAG setup, every query is treated in isolation. If a user asks a follow-up like *"How much does it cost?"*, the system fails — it doesn't know what *"it"* refers to when searching the vector database. Each turn is context-blind.
 
-This architecture introduces **Stateful Memory** (via SQLite) and **Query Rewriting** (via an LLM). The system stores the last 5-10 turns of the conversation, using them alongside the new query to generate a "Stand-alone Query" (e.g., "What is the price of the Enterprise Plan?"). This expanded query is then used for the vector search, providing a natural, human-like chat experience.
+This architecture fixes that with two additions:
+
+- **Stateful Memory** (SQLite) — stores the last N conversation turns, persisted to disk and resumable via session IDs
+- **Query Rewriting** (LLM) — uses conversation history to transform vague follow-ups into fully contextualized, standalone queries before hitting the vector database
+
+The result: a natural, human-like chat experience grounded in your documents.
 
 ---
 
 ## Features
 
 **Conversational Memory**
-Uses `sqlite3` to store and retrieve the last N conversational turns natively on disk, allowing you to resume sessions via unique Session IDs.
+Uses `sqlite3` to persist and retrieve the last N turns natively on disk. Sessions are identified by unique IDs, so conversations can be paused and resumed at any time.
 
-**Query Rewriting**
-Employs a zero-temperature LLM generation step to dynamically rewrite vague follow-up questions into fully contextualized, standalone queries before hitting the vector database.
+**LLM-Powered Query Rewriting**
+A dedicated zero-temperature generation step rewrites contextual follow-ups (e.g., *"How much does it cost?"*) into fully resolved queries (e.g., *"What is the price of the Enterprise Plan?"*) before retrieval — dramatically improving vector search accuracy.
 
 **High-Performance Vector Search**
-Powered by **Qdrant**, running locally via Docker, to handle embeddings securely and efficiently with exact cosine similarity matching.
+Powered by **Qdrant** running locally via Docker — exact cosine similarity matching with a clean client interface for upsert and search operations.
 
-**Fast Ingestion**
-Swapped to **PyMuPDF (`fitz`)** for rapid, lightweight PDF text extraction during the ingestion phase.
+**Fast PDF Ingestion**
+Uses **PyMuPDF (`fitz`)** for rapid, lightweight text extraction during the ingestion phase.
 
-**Production-Grade Prompt Engineering**
-The final generator LLM is fed the *Retrieved Chunks*, the *Standalone Query*, AND the *Conversation History*, ensuring answers are both grounded in source documents and contextually aware of the ongoing chat.
+**Context-Aware Generation**
+The final LLM is fed three inputs simultaneously: retrieved chunks, the rewritten standalone query, and full conversation history — ensuring answers are both document-grounded and conversationally coherent.
 
 ---
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    subgraph Ingestion["📥 Ingestion Pipeline"]
-        A["PDF Files (PyMuPDF)"] --> B["Recursive Chunker"]
-        B --> C["Gemini Embedder"]
-        C --> D[("Qdrant Vector DB")]
-    end
-    
-    subgraph Query["💬 Conversational Query Pipeline"]
-        E["User Query"] --> F{"Has History?"}
-        
-        %% Memory Branch
-        F -->|Yes| G["Fetch Last 5 Turns\n(SQLite)"]
-        G --> H["Query Rewriter (LLM)"]
-        H -->|Generates Standalone Query| I
-        
-        %% No Memory Branch
-        F -->|No| I["Embed Standalone Query"]
-        
-        %% Retrieval & Generation
-        I --> J["Search Qdrant"]
-        J --> K["Top-K Chunks"]
-        K --> L["Prompt Builder\n(Includes History)"]
-        L --> M["Gemini LLM Generator"]
-        M --> N["Answer + Sources"]
-        
-        %% Save to Memory
-        N -.->|"Save Q&A Pair"| O[("SQLite Memory DB")]
-    end
 ```
+╔══════════════════════════════════════════════════════════════╗
+║                      INGESTION PIPELINE                      ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  📂 data/  (PDFs, TXTs)                                      ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  📑 PyMuPDF Parser  ─────────────  Fast text extraction      ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  ✂️  Recursive Chunker                                        ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🔢 Gemini Embedder  ────────────  Batched                   ║
+║       │                                                      ║
+║       ▼                                                      ║
+║  🗃️  Qdrant Vector DB  ──────────  Local via Docker          ║
+╚══════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════╗
+║                  CONVERSATIONAL QUERY PIPELINE               ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  ❓ User Query                                               ║
+║       │                                                      ║
+║       ├── Has History? ──Yes──▶ Fetch Last N Turns (SQLite)  ║
+║       │                               │                      ║
+║       │                               ▼                      ║
+║       │                        Query Rewriter (LLM)          ║
+║       │                               │                      ║
+║       └────────── No ─────────────────┘                      ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                            Embed Standalone Query            ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                            Search Qdrant → Top-K Chunks      ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                   Prompt Builder  ←───┤                      ║
+║                   (Chunks + Query + History)                  ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                          Gemini LLM Generator                ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                          Answer + Source Citations           ║
+║                                       │                      ║
+║                                       ▼                      ║
+║                     Save Q&A Pair ──▶ SQLite Memory DB       ║
+╚══════════════════════════════════════════════════════════════╝
+```
+<img width="1774" height="887" alt="ChatGPT Image May 9, 2026, 11_07_41 PM" src="https://github.com/user-attachments/assets/7a7b2726-f78e-4e83-aa25-bb3531d9ee81" />
 
 ---
 
 ## Project Structure
 
-```text
+```
 Conversational_RAG/
-├── data/                   # 📂 Drop your PDFs here
-├── memory.db               # 💾 Auto-created: SQLite DB for chat history
-├── config.py               # ⚙️ Central config (models, paths, top-k)
-├── document_loader.py      # 📄 Fast text extraction using PyMuPDF
-├── chunker.py              # ✂️ Recursive character text splitting
-├── embedder.py             # 🧠 Gemini embeddings with batching
-├── vector_store.py         # 📦 Qdrant client (Upsert, Search)
-├── memory.py               # 🧠 SQLite operations (Save/Get history)
-├── query_rewriter.py       # 🔄 LLM logic to rewrite contextual queries
-├── generator.py            # 💬 Gemini LLM to generate the final answer
-├── rag_pipeline.py         # 🔗 Orchestrates ingestion + conversational flows
-├── main.py                 # 🚀 CLI entry point (handles session IDs)
-├── requirements.txt        # 📋 Python dependencies
-└── .env                    # 🔑 API Keys
+├── data/                   # Drop your PDFs and .txt files here
+├── memory.db               # Auto-created: SQLite DB for chat history
+├── config.py               # Central config: models, paths, top-k, memory window
+├── document_loader.py      # Fast PDF text extraction using PyMuPDF
+├── chunker.py              # Recursive character text splitting
+├── embedder.py             # Gemini embeddings with batching
+├── vector_store.py         # Qdrant client: upsert and search operations
+├── memory.py               # SQLite: save and retrieve conversation history
+├── query_rewriter.py       # LLM-based contextual query rewriting
+├── generator.py            # Gemini LLM: final answer generation
+├── rag_pipeline.py         # Orchestrates ingestion + conversational flows
+├── main.py                 # CLI entry point with session ID support
+├── requirements.txt        # Python dependencies
+└── .env                    # API key (not committed)
 ```
 
 ---
@@ -104,25 +135,38 @@ Conversational_RAG/
 ### Prerequisites
 
 - Python 3.9 or higher
-- A Google Gemini API key
-- Docker Desktop (to run Qdrant)
+- A Google Gemini API key — get one at [Google AI Studio](https://aistudio.google.com/apikey)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (to run Qdrant locally)
 
 ### Installation
 
-**1. Run Qdrant Vector Database**
-Ensure Docker is running, then start the Qdrant container:
+**1. Start the Qdrant Vector Database**
+
+Ensure Docker is running, then launch the Qdrant container:
 ```bash
 docker run -p 6333:6333 qdrant/qdrant
 ```
 
-**2. Install dependencies**
-Navigate to the module directory and install the requirements:
+**2. Clone the repository and navigate to the module**
 ```bash
+git clone https://github.com/rajkumarpawar07/RAG-Architectures.git
 cd RAG-Architectures/Conversational_RAG
+```
+
+**3. Create and activate a virtual environment**
+```bash
+python -m venv venv
+source venv/bin/activate       # macOS / Linux
+venv\Scripts\activate          # Windows
+```
+
+**4. Install dependencies**
+```bash
 pip install -r requirements.txt
 ```
 
-**3. Configure your API key**
+**5. Configure your API key**
+
 Create a `.env` file in the `Conversational_RAG/` directory:
 ```env
 GOOGLE_API_KEY="your_api_key_here"
@@ -132,55 +176,98 @@ GOOGLE_API_KEY="your_api_key_here"
 
 ## Usage
 
-### 1. Ingest Documents
+### Ingest Documents
 
 Place your `.pdf` or `.txt` files into the `data/` folder, then run:
 
 ```bash
 python main.py ingest
 ```
-*Parses, chunks, embeds, and upserts all documents into your local Qdrant instance.*
 
-### 2. Interactive Chat (With Memory)
+Parses, chunks, embeds, and upserts all documents into your local Qdrant instance.
 
-Start a continuous Q&A session. The system will remember your previous questions!
+---
+
+### Interactive Chat (With Memory)
+
+Start a continuous, stateful Q&A session. The system remembers your previous questions within the session.
 
 ```bash
 python main.py chat --session "my_chat_1"
 ```
-*(Type `quit` or `exit` to end the session)*
 
-### 3. Query — Single Question
+Type `quit` or `exit` to end the session. Resume it later by passing the same `--session` ID.
+
+---
+
+### Query — Single Question
 
 ```bash
 python main.py query "Who is Rajkumar Pawar?" --session "my_chat_1"
 ```
 
-### 4. View Statistics
+Appends to the specified session's history so context carries forward across calls.
 
-Check how many vectors have been embedded into Qdrant:
+---
+
+### View Index Statistics
 
 ```bash
 python main.py stats
 ```
 
+Displays the number of vectors currently stored in Qdrant.
+
 ---
 
-## Configuration (`config.py`)
+## Configuration
 
-Easily tune the pipeline parameters:
+All pipeline parameters live in `config.py`.
 
-- **`MEMORY_WINDOW`**: Change the number of past Q&A turns the system remembers (Default is 5).
-- **Qdrant**: Modify `QDRANT_URL` and `QDRANT_COLLECTION`.
-- **Models**: Swap the LLM model (`gemini-3.1-flash-lite`, `gemini-2.5-flash`, etc.).
+| Parameter         | Default                  | Description                                              |
+|-------------------|--------------------------|----------------------------------------------------------|
+| `MEMORY_WINDOW`   | `5`                      | Number of past Q&A turns included in each prompt         |
+| `CHUNK_SIZE`      | `1000`                   | Characters per chunk                                     |
+| `CHUNK_OVERLAP`   | `200`                    | Overlap between consecutive chunks                       |
+| `TOP_K`           | `5`                      | Number of chunks retrieved per query                     |
+| `QDRANT_URL`      | `http://localhost:6333`  | Qdrant server URL                                        |
+| `QDRANT_COLLECTION` | `rag_docs`             | Qdrant collection name                                   |
+| LLM               | `gemini-2.5-flash-lite`  | Swap for `gemini-2.0-flash`, `gemini-2.5-flash`, etc.   |
+
+---
+
+## Tech Stack
+
+| Component         | Library / Model                            |
+|-------------------|--------------------------------------------|
+| PDF Parsing       | PyMuPDF (`fitz`)                           |
+| Embeddings        | `gemini-embedding-001` via `google-genai`  |
+| Vector Database   | [Qdrant](https://qdrant.tech) via Docker   |
+| Conversation Memory | `sqlite3` (stdlib)                       |
+| Query Rewriting   | Gemini LLM (zero temperature)              |
+| LLM Generator     | `gemini-2.5-flash-lite` via `google-genai` |
+| Config Management | `python-dotenv`                            |
+| Language          | Python 3.9+                                |
+
+---
+
+## How It Differs from Standard RAG
+
+| Capability                  | Standard RAG | Conversational RAG |
+|-----------------------------|--------------|--------------------|
+| Multi-turn memory           | ✗            | ✓ (SQLite)         |
+| Follow-up question handling | ✗            | ✓ (Query rewriting)|
+| Session persistence         | ✗            | ✓ (Session IDs)    |
+| Vector database             | FAISS        | Qdrant             |
+| PDF parser                  | Docling      | PyMuPDF            |
 
 ---
 
 ## Part of RAG-Architectures
 
-This module builds upon the Standard RAG pipeline by introducing conversational state and query rewriting.
+This module builds on the Standard RAG pipeline by introducing conversational state and query rewriting.
 
-```text
+```
 RAG-Architectures/
 ├── Standard_RAG/
 ├── Conversational_RAG/  ◀ You are here
@@ -192,3 +279,24 @@ RAG-Architectures/
 ```
 
 🔗 [View the full collection →](https://github.com/rajkumarpawar07/RAG-Architectures)
+
+---
+
+## Contributing
+
+Contributions, issues, and suggestions are welcome.
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "feat: describe your change"`
+4. Push and open a Pull Request
+
+---
+
+## License
+
+MIT License — see the [LICENSE](../../LICENSE) file for details.
+
+---
+
+<p align="center">Built by <a href="https://github.com/rajkumarpawar07">Raj Kumar Pawar</a></p>
