@@ -1,4 +1,4 @@
-# Standard RAG - Retrieval-Augmented Generation
+<h1 align="center">Standard RAG: Retrieval-Augmented Generation </h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
