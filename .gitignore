@@ -10,7 +10,7 @@ venv.bak/
 # Project Specific
 Standard_RAG/data/
 Standard_RAG/faiss_index/
-
+data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -28,3 +28,4 @@ build/
 # OS specific
 .DS_Store
 Thumbs.db
+*.db

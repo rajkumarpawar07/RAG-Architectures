@@ -24,7 +24,7 @@ def ingest() -> dict:
     Steps:
       1. Load all PDFs and .txt files from data/
       2. Chunk documents using recursive character splitting
-      3. Embed all chunks using Gemini text-embedding-004
+      3. Embed all chunks using Gemini embedding model
       4. Build and save the FAISS index
 
     Returns a summary dict with stats.
