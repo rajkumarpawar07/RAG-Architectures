@@ -77,36 +77,51 @@ def ingest() -> dict:
     return stats
 
 
+from evaluator import evaluate_in_background
+from langfuse import get_client
+
+langfuse = get_client()
+
 def query(question: str, top_k: int = TOP_K) -> dict:
     """
-    Run the full query pipeline.
-
-    Steps:
-      1. Load the FAISS index from disk
-      2. Embed the query using Gemini
-      3. Search for top-K similar chunks
-      4. Generate an answer using Gemini LLM
-
-    Returns a dict with the answer, sources, and retrieved chunks.
+    Run the full query pipeline with Langfuse tracing.
     """
-    # Step 1: Load index
-    index, metadata = load_index()
+    with langfuse.start_as_current_observation(as_type="span", name="rag") as trace:
+        trace_id = trace.trace_id
+        
+        # Step 1: Load index
+        index, metadata = load_index()
+    
+        # Step 2: Embed query
+        with langfuse.start_as_current_observation(name="embed_query", input={"question": question}) as span:
+            query_embedding = embed_query(question)
+    
+        # Step 3: Search
+        with langfuse.start_as_current_observation(name="vector_search", input={"query_embedding_dim": len(query_embedding)}) as span:
+            results = search(query_embedding, index, metadata, top_k=top_k)
+    
+        # Step 4: Generate answer
+        with langfuse.start_as_current_observation(name="generation", input={"question": question, "retrieved_chunks": results}) as span:
+            answer = generate(question, results)
+            span.update(output={"answer": answer})
+    
+        # Build source list for display
+        sources = []
+        contexts = []
+        for r in results:
+            contexts.append(r.get("text", ""))
+            source_info = f"{r.get('source', '?')} (chunk {r.get('chunk_index', '?')}, score: {r.get('score', 0):.3f})"
+            if source_info not in sources:
+                sources.append(source_info)
+    
+        trace.update(
+            input={"question": question},
+            output={"answer": answer, "sources": sources}
+        )
 
-    # Step 2: Embed query
-    query_embedding = embed_query(question)
-
-    # Step 3: Search
-    results = search(query_embedding, index, metadata, top_k=top_k)
-
-    # Step 4: Generate answer
-    answer = generate(question, results)
-
-    # Build source list for display
-    sources = []
-    for r in results:
-        source_info = f"{r.get('source', '?')} (chunk {r.get('chunk_index', '?')}, score: {r.get('score', 0):.3f})"
-        if source_info not in sources:
-            sources.append(source_info)
+    # Trigger background evaluation
+    if trace_id:
+        evaluate_in_background(trace_id, question, contexts, answer)
 
     return {
         "question": question,

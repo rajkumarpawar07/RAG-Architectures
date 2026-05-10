@@ -2,3 +2,6 @@ google-genai
 docling
 faiss-cpu
 numpy
+langfuse
+ragas
+langchain-google-genai

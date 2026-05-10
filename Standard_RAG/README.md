@@ -4,8 +4,9 @@
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
   <img src="https://img.shields.io/badge/FAISS-Vector%20Search-FF6F00?style=flat-square" />
+  <img src="https://img.shields.io/badge/Langfuse-Observability-000000?style=flat-square" />
+  <img src="https://img.shields.io/badge/Ragas-Evaluation-FF4B4B?style=flat-square" />
   <img src="https://img.shields.io/badge/Docling-PDF%20Parser-6A0DAD?style=flat-square" />
-  <img src="https://img.shields.io/badge/Dependencies-%3C%205-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
 
@@ -39,6 +40,9 @@ Powered by `gemini-embedding-001` (3072-dimensional vectors) via the official `g
 **Grounded Generation**
 `gemini-2.5-flash-lite` generates answers strictly grounded in retrieved context, with source citations enforced through prompt engineering.
 
+**Observability & Evaluation (New)**
+Deep, span-level tracing of every query via [Langfuse](https://langfuse.com). In the background, the response is instantly evaluated using [Ragas](https://docs.ragas.io) to score `Faithfulness` and `Answer Relevancy` against the retrieved context, pushing metrics back to the trace without blocking the user.
+
 **Resilient API Calls**
 Exponential backoff handles rate limits (HTTP 429) automatically throughout the pipeline.
 
@@ -61,11 +65,12 @@ Standard_RAG/
 ├── chunker.py              # Recursive character text splitting
 ├── embedder.py             # Gemini embeddings with batching & exponential backoff
 ├── vector_store.py         # FAISS index: build, save, load, search
+├── evaluator.py            # Ragas async background evaluation + Langfuse integration
 ├── generator.py            # Prompt engineering + Gemini LLM generation
-├── rag_pipeline.py         # Orchestrates ingestion and query flows
+├── rag_pipeline.py         # Orchestrates ingestion and query flows (Langfuse traced)
 ├── main.py                 # CLI entry point
 ├── requirements.txt        # Python dependencies
-└── .env                    # API key (not committed)
+└── .env                    # API keys (not committed)
 ```
 
 ---
@@ -104,6 +109,11 @@ pip install -r requirements.txt
 Create a `.env` file in the `Standard_RAG/` directory:
 ```env
 GOOGLE_API_KEY="your_api_key_here"
+
+# For Observability (Optional but recommended)
+LANGFUSE_PUBLIC_KEY="pk-lf-..."
+LANGFUSE_SECRET_KEY="sk-lf-..."
+LANGFUSE_BASE_URL="https://us.cloud.langfuse.com" # or EU / Local
 ```
 
 ---
@@ -129,6 +139,15 @@ python main.py query "What are the main skills mentioned in the resume?"
 ```
 
 Returns a grounded answer with source citations from your indexed documents.
+
+If Langfuse keys are configured, it will also spin up a background thread and output:
+```text
+[Observability] Started background Ragas evaluation for trace...
+[Observability] faithfulness score: 1.000
+[Observability] answer_relevancy score: 0.950
+[Observability] Finished evaluation.
+```
+*(Check your Langfuse UI to see the full trace with metrics attached!)*
 
 ---
 
@@ -174,6 +193,8 @@ All pipeline parameters live in `config.py` — no digging through framework int
 | Embeddings        | `gemini-embedding-001` via `google-genai`    |
 | Vector Search     | `faiss-cpu`                                  |
 | LLM               | `gemini-2.5-flash-lite` via `google-genai`   |
+| Observability     | [Langfuse](https://langfuse.com/)            |
+| Evaluation        | [Ragas](https://docs.ragas.io)               |
 | Config Management | `python-dotenv`                              |
 | Language          | Python 3.9+                                  |
 
