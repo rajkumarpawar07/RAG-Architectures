@@ -1,0 +1,3 @@
+{"question": "Who is Rajkumar Pawar and what are his skills?", "expected_answer": "Rajkumar Pawar is a developer with skills in RAG, Python, and AI."}
+{"question": "What is the capital of France?", "expected_answer": "Paris"}
+{"question": "What are the latest projects Rajkumar worked on?", "expected_answer": "SearchMagnet and CodeSage-AI."}

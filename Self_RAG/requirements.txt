@@ -1,0 +1,11 @@
+google-genai
+chromadb
+docling
+pydantic
+pydantic-settings
+typer
+rich
+tenacity
+diskcache
+structlog
+python-dotenv
