@@ -1,0 +1,10 @@
+langchain
+langchain-google-genai
+langchain-weaviate
+weaviate-client>=4.4.0
+langsmith
+docling
+typer
+rich
+pydantic-settings
+python-dotenv

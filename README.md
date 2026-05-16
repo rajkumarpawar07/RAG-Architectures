@@ -3,7 +3,7 @@
 <p>
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Architectures-4%20built%20%7C%204%20coming-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/Architectures-6%20built%20%7C%202%20coming-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/Framework-From%20Scratch-FF6F00?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
@@ -55,6 +55,12 @@ An autonomous research agent powered by a LangGraph ReAct loop.
 *   **The Solution:** An autonomous agent that dynamically plans, routes searches between internal private documents (Qdrant) and the public web (Tavily), and validates its own evidence before generating an answer.
 *   **Tech Stack:** `LangGraph`, `Qdrant`, `Tavily Web Search API`, `LangSmith` (Observability), `Docling`.
 
+### 6. [Fusion RAG](./Fusion_RAG)
+A high-recall pipeline using Query Expansion and Reciprocal Rank Fusion (RRF).
+*   **The Problem:** Humans are bad at searching. Ambiguous or poorly worded queries fail to hit the exact semantic chunks in the vector DB.
+*   **The Solution:** Uses an LLM to generate multiple variations of the query, performs parallel retrieval, and uses the RRF algorithm to re-rank and fuse the most consistently relevant documents.
+*   **Tech Stack:** `LCEL` (LangChain Expression Language), `Weaviate v4` (Docker), `LangSmith`.
+
 ---
 
 ## 🚀 Getting Started
@@ -74,28 +80,22 @@ All projects currently utilize the **Google Gemini API** (`gemini-1.5-pro` and `
 
 ## Capability Matrix
 
-| Capability                    | Standard | Conversational | Corrective | Self-RAG |
-|-------------------------------|:--------:|:--------------:|:----------:|:--------:|
-| Document Q&A                  | ✓        | ✓              | ✓          | ✓        |
-| Multi-turn memory             | ✗        | ✓              | ✓          | ✗        |
-| Query rewriting               | ✗        | ✓              | ✓          | ✓ (HyDE) |
-| Retrieval quality grading     | ✗        | ✗              | ✓          | ✓        |
-| Web search fallback           | ✗        | ✗              | ✓          | ✗        |
-| Retrieval skip (trivial Q)    | ✗        | ✗              | ✗          | ✓        |
-| Hallucination detection       | ✗        | ✗              | ✗          | ✓        |
-| Self-correction loop          | ✗        | ✗              | ✗          | ✓        |
-| HyDE re-retrieval             | ✗        | ✗              | ✗          | ✓        |
-| Dual LLM (speed + accuracy)   | ✗        | ✗              | ✗          | ✓        |
-| Observability logging         | ✗        | ✗              | ✓          | ✗        |
-| Batch evaluation harness      | ✗        | ✗              | ✗          | ✓        |
-| Vector backend                | FAISS    | Qdrant         | pgvector   | ChromaDB |
+| Capability                    | Standard | Conversational | Corrective | Self-RAG | Agentic | Fusion |
+|-------------------------------|:--------:|:--------------:|:----------:|:--------:|:-------:|:------:|
+| Document Q&A                  | ✓        | ✓              | ✓          | ✓        | ✓       | ✓      |
+| Multi-turn memory             | ✗        | ✓              | ✓          | ✗        | ✓       | ✗      |
+| Query rewriting               | ✗        | ✓              | ✓          | ✓ (HyDE) | ✓       | ✓      |
+| Web search fallback           | ✗        | ✗              | ✓          | ✗        | ✓       | ✗      |
+| Self-correction loop          | ✗        | ✗              | ✗          | ✓        | ✓       | ✗      |
+| Multi-Query Expansion         | ✗        | ✗              | ✗          | ✗        | ✗       | ✓      |
+| Reciprocal Rank Fusion        | ✗        | ✗              | ✗          | ✗        | ✗       | ✓      |
+| Vector backend                | FAISS    | Qdrant         | pgvector   | ChromaDB | Qdrant  | Weaviate|
 
 ---
 
 ## 🛠️ Roadmap / Upcoming Architectures
 
 *   [ ] **Adaptive RAG**: Dynamically routes queries to different RAG strategies (e.g., QA vs Summarization) based on intent.
-*   [ ] **Fusion RAG**: Reciprocal Rank Fusion (RRF) for blending results from multiple retrieval strategies.
 *   [ ] **Graph RAG**: Using Knowledge Graphs to answer global, multi-hop queries over entire document corpuses.
 
 ---
