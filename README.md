@@ -121,4 +121,10 @@ Contributions, issues, and suggestions are welcome!
 
 MIT License — see the [LICENSE](LICENSE) file for details.
 
+---
+
+## 💡 Inspiration
+
+https://medium.com/towards-artificial-intelligence/rag-architectures-every-ai-developer-must-know-a-complete-guide-f3524ee68b9c
+
 <p align="center">Built by <a href="https://github.com/rajkumarpawar07">Rajkumar Pawar</a></p>
