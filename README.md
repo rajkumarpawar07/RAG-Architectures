@@ -1,6 +1,6 @@
 <h1 align="center">RAG Architectures</h1>
 
-<p>
+<p align="center">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
   <img src="https://img.shields.io/badge/Architectures-7%20built%20%7C%201%20coming-brightgreen?style=flat-square" />
