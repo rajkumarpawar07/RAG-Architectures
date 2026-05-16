@@ -28,37 +28,8 @@ Human users are often terrible at formulating search queries. They ask vague, am
 
 This pipeline is built using pure **LangChain Expression Language (LCEL)** to maximize parallel execution speed.
 
-```mermaid
-graph TD
-    A([Original User Query]) --> B[Query Generator\ngemini-3.1-flash-lite]
-    
-    B -->|Generates Variations| C1[Query Variation 1]
-    B --> C2[Query Variation 2]
-    B --> C3[Query Variation 3]
-    B --> C4[Query Variation N]
-    
-    A --> D{Parallel Weaviate Retrievers}
-    C1 --> D
-    C2 --> D
-    C3 --> D
-    C4 --> D
-    
-    subgraph Vector Store
-        D -->|Search| W[(Weaviate Docker\nCollection: FusionRAGDocs)]
-    end
-    
-    D -->|List of Docs 1| E[Reciprocal Rank Fusion\nMath Algorithm]
-    D -->|List of Docs 2| E
-    D -->|List of Docs 3| E
-    D -->|List of Docs N| E
-    
-    E -->|Mathematical Re-Ranking| F[Top K Unique Fused Docs]
-    
-    F --> G[Generator Node\ngemini-3.1-flash-lite]
-    A --> G
-    
-    G --> H([Final Grounded Answer])
-```
+<img width="1536" height="1024" alt="ChatGPT Image May 16, 2026, 11_56_44 PM" src="https://github.com/user-attachments/assets/b8320b2a-6b19-4070-b7a5-b674c6537b71" />
+
 
 ### 🧮 What is Reciprocal Rank Fusion (RRF)?
 RRF is a mathematical formula that re-ranks documents retrieved from multiple queries.
