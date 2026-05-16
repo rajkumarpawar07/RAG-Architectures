@@ -47,6 +47,12 @@ The ultimate self-correcting RAG state machine that critiques its own reasoning.
 *   **The Solution:** A pure Python loop with **5 Reflection Gates** (`IsRet`, `IsRel`, `IsSup`, `Revise`, `IsUse`). If it detects hallucinations, it rewrites its own draft. If the final answer is useless, it generates a hypothetical ideal document (`HyDE`) and retrieves again.
 *   **Tech Stack:** `ChromaDB`, `Pydantic Structured Outputs` (Native enforcement), Dual Gemini Models (`Flash Lite` & `Pro`), `Typer` & `Rich` (Beautiful CLI inner monologue).
 
+### 5. [Agentic RAG](./Agentic_RAG)
+An autonomous research agent powered by a LangGraph ReAct loop.
+*   **The Problem:** Complex queries cannot be solved with a single vector database lookup. They require multi-step reasoning, evidence synthesis, and real-time external data.
+*   **The Solution:** An autonomous agent that dynamically plans, routes searches between internal private documents (Qdrant) and the public web (Tavily), and validates its own evidence before generating an answer.
+*   **Tech Stack:** `LangGraph`, `Qdrant`, `Tavily Web Search API`, `LangSmith` (Observability), `Docling`.
+
 ---
 
 ## 🚀 Getting Started
@@ -68,7 +74,6 @@ All projects currently utilize the **Google Gemini API** (`gemini-1.5-pro` and `
 
 *   [ ] **Adaptive RAG**: Dynamically routes queries to different RAG strategies (e.g., QA vs Summarization) based on intent.
 *   [ ] **Fusion RAG**: Reciprocal Rank Fusion (RRF) for blending results from multiple retrieval strategies.
-*   [ ] **Agentic RAG**: Multi-agent collaborative RAG systems using tools.
 *   [ ] **Graph RAG**: Using Knowledge Graphs to answer global, multi-hop queries over entire document corpuses.
 
 ---

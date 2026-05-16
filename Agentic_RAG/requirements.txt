@@ -1,0 +1,12 @@
+langgraph
+langchain
+langchain-google-genai
+langchain-community
+langsmith
+qdrant-client
+tavily-python
+docling
+pydantic
+python-dotenv
+typer
+rich
