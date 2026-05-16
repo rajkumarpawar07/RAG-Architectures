@@ -1,0 +1,10 @@
+langchain
+langchain-community
+langchain-google-genai
+langchain-experimental
+neo4j
+docling
+typer
+rich
+pydantic-settings
+python-dotenv

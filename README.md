@@ -3,7 +3,7 @@
 <p>
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Architectures-6%20built%20%7C%202%20coming-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/Architectures-7%20built%20%7C%201%20coming-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/Framework-From%20Scratch-FF6F00?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
@@ -61,6 +61,12 @@ A high-recall pipeline using Query Expansion and Reciprocal Rank Fusion (RRF).
 *   **The Solution:** Uses an LLM to generate multiple variations of the query, performs parallel retrieval, and uses the RRF algorithm to re-rank and fuse the most consistently relevant documents.
 *   **Tech Stack:** `LCEL` (LangChain Expression Language), `Weaviate v4` (Docker), `LangSmith`.
 
+### 7. [Graph RAG](./Graph_RAG)
+A relational architecture using Knowledge Graphs for multi-hop reasoning.
+*   **The Problem:** Standard vector search only looks for similar text. It struggles to connect the dots across multiple documents to answer "how" or "why" questions (causal reasoning).
+*   **The Solution:** Parses unstructured text to extract explicit Entities and Relationships. The LLM translates user queries into Cypher, executing deterministic graph traversal to find the exact causal links.
+*   **Tech Stack:** `Neo4j` (Docker), `langchain-neo4j` (LLMGraphTransformer & GraphCypherQAChain), `Gemini`.
+
 ---
 
 ## 🚀 Getting Started
@@ -80,23 +86,23 @@ All projects currently utilize the **Google Gemini API** (`gemini-1.5-pro` and `
 
 ## Capability Matrix
 
-| Capability                    | Standard | Conversational | Corrective | Self-RAG | Agentic | Fusion |
-|-------------------------------|:--------:|:--------------:|:----------:|:--------:|:-------:|:------:|
-| Document Q&A                  | ✓        | ✓              | ✓          | ✓        | ✓       | ✓      |
-| Multi-turn memory             | ✗        | ✓              | ✓          | ✗        | ✓       | ✗      |
-| Query rewriting               | ✗        | ✓              | ✓          | ✓ (HyDE) | ✓       | ✓      |
-| Web search fallback           | ✗        | ✗              | ✓          | ✗        | ✓       | ✗      |
-| Self-correction loop          | ✗        | ✗              | ✗          | ✓        | ✓       | ✗      |
-| Multi-Query Expansion         | ✗        | ✗              | ✗          | ✗        | ✗       | ✓      |
-| Reciprocal Rank Fusion        | ✗        | ✗              | ✗          | ✗        | ✗       | ✓      |
-| Vector backend                | FAISS    | Qdrant         | pgvector   | ChromaDB | Qdrant  | Weaviate|
+| Capability                    | Standard | Conversational | Corrective | Self-RAG | Agentic | Fusion | Graph RAG |
+|-------------------------------|:--------:|:--------------:|:----------:|:--------:|:-------:|:------:|:---------:|
+| Document Q&A                  | ✓        | ✓              | ✓          | ✓        | ✓       | ✓      | ✓         |
+| Multi-turn memory             | ✗        | ✓              | ✓          | ✗        | ✓       | ✗      | ✗         |
+| Query rewriting               | ✗        | ✓              | ✓          | ✓ (HyDE) | ✓       | ✓      | ✗         |
+| Web search fallback           | ✗        | ✗              | ✓          | ✗        | ✓       | ✗      | ✗         |
+| Self-correction loop          | ✗        | ✗              | ✗          | ✓        | ✓       | ✗      | ✗         |
+| Multi-Query Expansion         | ✗        | ✗              | ✗          | ✗        | ✗       | ✓      | ✗         |
+| Multi-hop Causal Reasoning    | ✗        | ✗              | ✗          | ✗        | ✗       | ✗      | ✓         |
+| Entity Relationship Mapping   | ✗        | ✗              | ✗          | ✗        | ✗       | ✗      | ✓         |
+| Vector backend                | FAISS    | Qdrant         | pgvector   | ChromaDB | Qdrant  | Weaviate| Neo4j     |
 
 ---
 
 ## 🛠️ Roadmap / Upcoming Architectures
 
 *   [ ] **Adaptive RAG**: Dynamically routes queries to different RAG strategies (e.g., QA vs Summarization) based on intent.
-*   [ ] **Graph RAG**: Using Knowledge Graphs to answer global, multi-hop queries over entire document corpuses.
 
 ---
 
