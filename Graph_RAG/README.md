@@ -8,37 +8,7 @@ This project extracts entities and explicit relationships from unstructured text
 
 ## 🧠 Architecture
 
-```mermaid
-flowchart TD
-    %% Styling
-    classDef llm fill:#8A2BE2,stroke:#4B0082,stroke-width:2px,color:#fff,rx:5px
-    classDef db fill:#008B8B,stroke:#006400,stroke-width:2px,color:#fff,rx:5px
-    classDef doc fill:#FF8C00,stroke:#B8860B,stroke-width:2px,color:#fff,rx:5px
-    classDef user fill:#DC143C,stroke:#8B0000,stroke-width:2px,color:#fff,rx:5px
-    classDef logic fill:#4169E1,stroke:#00008B,stroke-width:2px,color:#fff,rx:5px
-
-    %% Graph Construction Pipeline
-    subgraph Offline [Phase 1: Knowledge Graph Construction]
-        direction LR
-        PDF[Raw Documents PDF]:::doc --> Loader[Docling Loader]:::logic
-        Loader --> Chunks[Chunking]:::logic
-        Chunks --> Gemini1{Gemini LLM\nEntity Extractor}:::llm
-        Gemini1 -- Extracts --> Nodes[Nodes & Edges\n(Person)-[WORKED_AT]->(Org)]:::logic
-        Nodes --> Neo4j[(Neo4j Graph Database)]:::db
-    end
-
-    %% Graph Query Pipeline
-    subgraph Online [Phase 2: Graph Traversal & QA]
-        direction TD
-        Query([User Question]):::user --> GraphChain[GraphCypherQAChain]:::logic
-        GraphChain --> Gemini2{Gemini LLM\nCypher Generator}:::llm
-        Gemini2 -- Translates to Cypher --> Neo4j
-        Neo4j -- Subgraph/Paths --> Gemini3{Gemini LLM\nSynthesis}:::llm
-        Gemini3 --> Answer([Final Answer]):::user
-    end
-
-    Offline -.- Online
-```
+<img width="1692" height="930" alt="ChatGPT Image May 17, 2026, 12_46_01 AM" src="https://github.com/user-attachments/assets/171fdb04-8758-422e-83d3-30317839022a" />
 
 ---
 
