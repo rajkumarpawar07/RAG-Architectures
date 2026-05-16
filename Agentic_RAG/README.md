@@ -39,40 +39,8 @@ The agent is equipped with four core tools:
 
 ## 🧠 Architecture (ReAct Loop)
 
-```mermaid
-graph TD
-    A([User Query]) --> B[Agent Node\nReAct Brain · gemini-3.1-flash-lite]
+<img width="1536" height="1024" alt="ChatGPT Image May 16, 2026, 05_41_46 PM" src="https://github.com/user-attachments/assets/fc317825-411c-431e-a9e8-d59dcea5d279" />
 
-    B -->|Tool Call Detected| C{Tool Router\nToolNode}
-    B -->|No Tool Call OR\nIterations ≥ 5| G[Generator Node\nFinal Synthesis]
-
-    C -->|query is complex| D1[🔧 decompose_query\nBreak into sub-questions]
-    C -->|needs internal docs| D2[🔍 vector_search\nQdrant · agentic_rag_docs]
-    C -->|needs real-time info| D3[🌐 web_search\nTavily API]
-    C -->|check evidence| D4[✅ validate_sufficiency\nSUFFICIENT / INSUFFICIENT]
-
-    D1 --> E[Observation Added\nto AgentState.messages]
-    D2 --> E
-    D3 --> E
-    D4 --> E
-
-    E --> F{Sufficient?\nIterations < 5?}
-    F -->|INSUFFICIENT\nand iterations < 5| B
-    F -->|SUFFICIENT\nor max iterations| G
-
-    G --> H([Final Answer\nwith Cited Sources])
-
-    subgraph Observability
-        L[LangSmith\nAuto-traces every node,\ntool call, and LLM invocation]
-    end
-
-    subgraph Vector Store
-        M[Qdrant Docker\ncollection: agentic_rag_docs\nDocling + 768D embeddings]
-    end
-
-    D2 -.-> M
-    B -.-> L
-```
 
 ---
 
