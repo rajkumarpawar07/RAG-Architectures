@@ -1,8 +1,10 @@
 <h1 align="center">RAG Architectures</h1>
 
-<p align="center">
+<p>
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Gemini-SDK-4285F4?style=flat-square&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Architectures-4%20built%20%7C%204%20coming-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/Framework-From%20Scratch-FF6F00?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
 
@@ -67,6 +69,26 @@ cd Standard_RAG
 ```
 
 All projects currently utilize the **Google Gemini API** (`gemini-1.5-pro` and `gemini-3.1-flash-lite`) via the official `google-genai` SDK for low latency and high quality reasoning.
+
+---
+
+## Capability Matrix
+
+| Capability                    | Standard | Conversational | Corrective | Self-RAG |
+|-------------------------------|:--------:|:--------------:|:----------:|:--------:|
+| Document Q&A                  | ✓        | ✓              | ✓          | ✓        |
+| Multi-turn memory             | ✗        | ✓              | ✓          | ✗        |
+| Query rewriting               | ✗        | ✓              | ✓          | ✓ (HyDE) |
+| Retrieval quality grading     | ✗        | ✗              | ✓          | ✓        |
+| Web search fallback           | ✗        | ✗              | ✓          | ✗        |
+| Retrieval skip (trivial Q)    | ✗        | ✗              | ✗          | ✓        |
+| Hallucination detection       | ✗        | ✗              | ✗          | ✓        |
+| Self-correction loop          | ✗        | ✗              | ✗          | ✓        |
+| HyDE re-retrieval             | ✗        | ✗              | ✗          | ✓        |
+| Dual LLM (speed + accuracy)   | ✗        | ✗              | ✗          | ✓        |
+| Observability logging         | ✗        | ✗              | ✓          | ✗        |
+| Batch evaluation harness      | ✗        | ✗              | ✗          | ✓        |
+| Vector backend                | FAISS    | Qdrant         | pgvector   | ChromaDB |
 
 ---
 
